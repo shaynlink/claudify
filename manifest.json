@@ -1,0 +1,182 @@
+{
+  "name": "claudify",
+  "version": "1.0.0",
+  "dxt_version": "0.1",
+  "description": "MCP connector for Claude IA (from Perplexity). The app can interact between Claude and Spotify by using Oauth2 with a local server.\n",
+  "author": {
+    "name": "shaynlink"
+  },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/server/index.mjs"
+      ],
+      "env": {
+        "NODE_ENV": "production",
+        "SPOTIFY_CLIENT_ID": "${SPOTIFY_CLIENT_ID}",
+        "SPOTIFY_CLIENT_SECRET": "${SPOTIFY_CLIENT_SECRET}",
+        "SPOTIFY_REDIRECT_URI": "${SPOTIFY_REDIRECT_URI}",
+        "SPOTIFY_SCOPES": "${SPOTIFY_SCOPES || 'user-read-playback-state user-modify-playback-state user-read-currently-playing playlist-read-private playlist-modify-public playlist-modify-private'}"
+      }
+    }
+  },
+  "capabilities": {
+    "tools": [
+      {
+        "name": "spotify_authenticate",
+        "description": "S'authentifier avec Spotify OAuth2"
+      },
+      {
+        "name": "spotify_get_current_track",
+        "description": "Obtenir les informations de la piste en cours"
+      },
+      {
+        "name": "spotify_play_pause",
+        "description": "Jouer ou mettre en pause la musique"
+      },
+      {
+        "name": "spotify_search",
+        "description": "Rechercher des pistes, artistes ou playlists"
+      },
+      {
+        "name": "spotify_play_track",
+        "description": "Jouer une piste spécifique"
+      },
+      {
+        "name": "spotify_next_track",
+        "description": "Passer à la piste suivante"
+      },
+      {
+        "name": "spotify_previous_track",
+        "description": "Revenir à la piste précédente"
+      },
+      {
+        "name": "spotify_get_playlists",
+        "description": "Obtenir la liste des playlists de l'utilisateur"
+      },
+      {
+        "name": "spotify_create_playlist",
+        "description": "Créer une nouvelle playlist"
+      },
+      {
+        "name": "spotify_add_to_playlist",
+        "description": "Ajouter des pistes à une playlist"
+      }
+    ]
+  },
+
+  "permissions": {
+    "network": {
+      "domains": [
+        "accounts.spotify.com",
+        "api.spotify.com"
+      ],
+      "ports": [443, 6743]
+    },
+    "oauth": {
+      "provider": "spotify",
+      "scopes": [
+        "user-read-playback-state",
+        "user-modify-playback-state",
+        "user-read-currently-playing",
+        "playlist-read-private",
+        "playlist-modify-public",
+        "playlist-modify-private",
+        "user-library-read",
+        "user-library-modify",
+        "user-read-email",
+        "user-read-private"
+      ]
+    }
+  },
+
+  "configuration": {
+    "required_env_vars": [
+      "SPOTIFY_CLIENT_ID",
+      "SPOTIFY_CLIENT_SECRET",
+      "SPOTIFY_REDIRECT_URI"
+    ],
+    "optional_env_vars": [
+      "SPOTIFY_SCOPES"
+    ],
+    "default_values": {
+      "SPOTIFY_REDIRECT_URI": "http://localhost:8080/callback",
+      "SPOTIFY_SCOPES": "user-read-playback-state user-modify-playback-state user-read-currently-playing playlist-read-private playlist-modify-public playlist-modify-private"
+    }
+  },
+
+  "dependencies": {
+    "node": ">=22.5.0",
+    "npm_packages": [
+      "@modelcontextprotocol/sdk",
+      "express"
+    ]
+  },
+
+  "files": [
+    "secure-credentials.mjs",
+    "index.mjs",
+    "package.json",
+    "README.md"
+  ],
+
+  "keywords": [
+    "spotify",
+    "music",
+    "audio",
+    "streaming",
+    "claude",
+    "mcp",
+    "oauth2"
+  ],
+
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shaynlink/claudify.git"
+  },
+
+  "bugs": {
+    "url": "https://github.com/shaynlink/claudify/issues"
+  },
+
+  "homepage": "https://github.com/shaynlink/claudify#readme",
+
+  "engines": {
+    "node": ">=22.5.0",
+    "claude": ">=4.0.0"
+  },
+
+  "scripts": {
+    "start": "node spotify-connector.js",
+    "install-deps": "npm install --build-from-source",
+    "test": "node test-credentials.mjs",
+    "test:full": "node -e \"require('./test-credentials').runAllTests()\"",
+    "test:security": "node -e \"require('./test-credentials').securityTest()\"",
+    "test:load": "node -e \"require('./test-credentials').loadTest()\"",
+    "cleanup": "node -e \"const mgr = new (require('./secure-credentials').SecureCredentialsManager)(); console.log('Nettoyés:', mgr.cleanupExpiredCredentials()); mgr.close();\"",
+    "backup": "node -e \"const mgr = new (require('./secure-credentials').SecureCredentialsManager)(); const path = './backup-' + new Date().toISOString().replace(/[:.]/g, '-') + '.db'; mgr.backup(path); console.log('Sauvegarde créée:', path); mgr.close();\"",
+    "stats": "node -e \"const mgr = new (require('./secure-credentials').SecureCredentialsManager)(); console.log(JSON.stringify(mgr.getSecurityStats(), null, 2)); mgr.close();\"",
+    "reset-db": "node -e \"const fs = require('fs'); const mgr = new (require('./secure-credentials').SecureCredentialsManager)(); const dbPath = mgr.dbPath; mgr.close(); if(fs.existsSync(dbPath)) { fs.unlinkSync(dbPath); console.log('Base de données supprimée:', dbPath); } else { console.log('Aucune base à supprimer'); }\"",
+    "dev": "NODE_ENV=development node spotify-connector.js",
+    "prod": "NODE_ENV=production node spotify-connector.js"
+  },
+
+  "metadata": {
+    "category": "entertainment",
+    "tags": ["music", "streaming", "api"],
+    "compatibility": {
+      "claude_versions": ["4.0+"],
+      "platforms": ["windows", "macos", "linux"]
+    },
+    "oauth_provider": {
+      "name": "Spotify",
+      "auth_url": "https://accounts.spotify.com/authorize",
+      "token_url": "https://accounts.spotify.com/api/token",
+      "api_base_url": "https://api.spotify.com/v1"
+    }
+  }
+}

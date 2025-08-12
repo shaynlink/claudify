@@ -1,0 +1,37 @@
+{
+  "name": "claudify",
+  "version": "1.0.0",
+  "description": "MCP connector for Claude IA (from Perplexity). The app can interact between Claude IA and Spotify by using Oauth2 with local server.",
+  "main": "server/index.mjs",
+  "scripts": {
+    "start": "node server/index.mjs",
+    "install-deps": "npm install --build-from-source",
+    "test": "node test-credentials.mjs",
+    "test:full": "node -e \"require('./test-credentials').runAllTests()\"",
+    "test:security": "node -e \"require('./test-credentials').securityTest()\"",
+    "test:load": "node -e \"require('./test-credentials').loadTest()\"",
+    "cleanup": "node -e \"const mgr = new (require('./secure-credentials').SecureCredentialsManager)(); console.log('Nettoyés:', mgr.cleanupExpiredCredentials()); mgr.close();\"",
+    "backup": "node -e \"const mgr = new (require('./secure-credentials').SecureCredentialsManager)(); const path = './backup-' + new Date().toISOString().replace(/[:.]/g, '-') + '.db'; mgr.backup(path); console.log('Sauvegarde créée:', path); mgr.close();\"",
+    "stats": "node -e \"const mgr = new (require('./secure-credentials').SecureCredentialsManager)(); console.log(JSON.stringify(mgr.getSecurityStats(), null, 2)); mgr.close();\"",
+    "reset-db": "node -e \"const fs = require('fs'); const mgr = new (require('./secure-credentials').SecureCredentialsManager)(); const dbPath = mgr.dbPath; mgr.close(); if(fs.existsSync(dbPath)) { fs.unlinkSync(dbPath); console.log('Base de données supprimée:', dbPath); } else { console.log('Aucune base à supprimer'); }\"",
+    "dev": "NODE_ENV=development node spotify-connector.js",
+    "prod": "NODE_ENV=production node spotify-connector.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shaynlink/claudify.git"
+  },
+  "keywords": ["spotify", "claude", "mcp", "connector", "oauth2", "music"],
+  "author": "shaynlink",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/shaynlink/claudify/issues"
+  },
+  "homepage": "https://github.com/shaynlink/claudify#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.2",
+    "express": "^5.1.0"
+  },
+  "os": ["win32", "darwin", "linux"]
+}
